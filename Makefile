@@ -42,4 +42,4 @@ test: $(INSTALL_STAMP)
 
 .PHONY: clean
 clean:
-	find . | grep -E "(__pycache__|\.pyc|\.pyo$\)" | xargs rm -rf
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$\|\.mypy_cache|\.pytest_cache|\.ruff_cache|.coverage)" | xargs rm -rf
