@@ -51,7 +51,7 @@ def plot_map(
 
     # Plot the GeoDataFrame with color based on the specified column
     if column is None:
-        gdf.plot(ax=ax, cmap=cmap, edgecolor=edge_color, linewidth=0.8)
+        gdf.plot(ax=ax, edgecolor=edge_color, linewidth=0.8, facecolor="none")
     else:
         gdf.plot(ax=ax, column=column, cmap=cmap, edgecolor=edge_color, linewidth=0.8)
 
