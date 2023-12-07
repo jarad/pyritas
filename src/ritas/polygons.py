@@ -17,7 +17,7 @@ from shapely.geometry import GeometryCollection, MultiPolygon, Point, Polygon, b
 from shapely.ops import transform, unary_union
 from tqdm import tqdm
 
-from ritas.utils import convert_to_utm, is_in_utm_range
+from ritas.utils import convert_to_utm, is_in_utm_range, lognormal_to_normal, yield_equation_mgha
 
 warnings.filterwarnings("ignore")
 
@@ -115,7 +115,11 @@ def make_bounding_box(
     )
 
 
-def make_vehicle_polygons(df: pd.DataFrame, proj4string: str, is_utm: bool = True) -> gpd.GeoDataFrame:
+def make_vehicle_polygons(
+    df: pd.DataFrame,
+    proj4string: str,
+    is_utm: bool = True,
+) -> gpd.GeoDataFrame:
     """
     Create a gpd.GeoDataFrame object from the dataframe given as an input.
     For each row in the input dataframe, a rectangle is constructed using
@@ -192,7 +196,9 @@ def make_vehicle_polygons(df: pd.DataFrame, proj4string: str, is_utm: bool = Tru
 # ============================================================================
 
 
-def check_polygon_type(geom: Union[Polygon, MultiPolygon]) -> Union[Polygon, MultiPolygon, None]:
+def check_polygon_type(
+    geom: Union[Polygon, MultiPolygon],
+) -> Union[Polygon, MultiPolygon, None]:
     if isinstance(geom, (Polygon, MultiPolygon)):
         return geom
     if geom.is_empty:
@@ -204,13 +210,18 @@ def check_polygon_type(geom: Union[Polygon, MultiPolygon]) -> Union[Polygon, Mul
     return None
 
 
-def clean_polygon(poly: Union[Polygon, MultiPolygon]) -> Union[Polygon, MultiPolygon, None]:
+def clean_polygon(
+    poly: Union[Polygon, MultiPolygon],
+) -> Union[Polygon, MultiPolygon, None]:
     if not poly.is_valid:
         poly = poly.buffer(0)
     return check_polygon_type(poly)
 
 
-def crop_polygon(sp_from: Polygon, sp_to: Polygon) -> Union[Polygon, MultiPolygon, None]:
+def crop_polygon(
+    sp_from: Polygon,
+    sp_to: Polygon,
+) -> Union[Polygon, MultiPolygon, None]:
     sp_from = clean_polygon(sp_from)
     sp_to = clean_polygon(sp_to)
     if sp_from is None or sp_to is None:
@@ -219,7 +230,10 @@ def crop_polygon(sp_from: Polygon, sp_to: Polygon) -> Union[Polygon, MultiPolygo
     return check_polygon_type(result)
 
 
-def process_single_polygon(poly: Polygon, reference_polygons: List[Polygon]) -> List[Polygon]:
+def process_single_polygon(
+    poly: Polygon,
+    reference_polygons: List[Polygon],
+) -> List[Polygon]:
     cropped_list = []
     for ref_poly in reference_polygons:
         if poly.within(ref_poly):
@@ -256,7 +270,11 @@ def reshape_polygons(spdf: gpd.GeoDataFrame, verbose: bool = True) -> gpd.GeoDat
                 if cropped:
                     spdf.at[idx, "geometry"] = cropped
             except (ValueError, AttributeError) as e:
-                logging.error("Error processing geometry at index %s with exception: %s", idx, e)
+                logging.error(
+                    "Error processing geometry at index %s with exception: %s",
+                    idx,
+                    e,
+                )
                 continue
 
     # Merge adjacent and overlapping polygons
@@ -273,7 +291,11 @@ def reshape_polygons(spdf: gpd.GeoDataFrame, verbose: bool = True) -> gpd.GeoDat
 # =============================================================================
 
 
-def make_grid_by_size(spdf: gpd.GeoDataFrame, width: float, height: float) -> gpd.GeoDataFrame:
+def make_grid_by_size(
+    spdf: gpd.GeoDataFrame,
+    width: float,
+    height: float,
+) -> gpd.GeoDataFrame:
     """Create a grid of polygons based on width and height.
 
     Args:
@@ -320,7 +342,14 @@ def make_grid_by_n(geodataframe: gpd.GeoDataFrame, n: int) -> gpd.GeoDataFrame:
     y_steps = np.arange(miny, maxy, grid_height)
 
     polygons = [
-        Polygon([(x, y), (x + grid_width, y), (x + grid_width, y + grid_height), (x, y + grid_height)])
+        Polygon(
+            [
+                (x, y),
+                (x + grid_width, y),
+                (x + grid_width, y + grid_height),
+                (x, y + grid_height),
+            ],
+        )
         for x in x_steps
         for y in y_steps
     ]
@@ -389,6 +418,7 @@ def chop_polygons(
     col_identity: List[str],
     col_weight: List[str],
     tol: float = 1e-8,
+    min_intersection_area: float = 1e-4,  # Minimum intersection area threshold
 ) -> gpd.GeoDataFrame:
     # Make sure the grid has an 'id' column
     if "id" not in grid_spdf.columns:
@@ -401,7 +431,11 @@ def chop_polygons(
     results = []
 
     # Iterate over input polygons with a progress bar
-    for _poly_index, poly_row in tqdm(spdf.iterrows(), total=spdf.shape[0], desc="Chopping polygons..."):
+    for _poly_index, poly_row in tqdm(
+        spdf.iterrows(),
+        total=spdf.shape[0],
+        desc="Chopping polygons...",
+    ):
         polygon = poly_row.geometry
 
         # Fix invalid geometries and simplify with a tolerance
@@ -424,36 +458,29 @@ def chop_polygons(
             if polygon.intersects(grid_polygon):
                 intersection = polygon.intersection(grid_polygon)
 
-                # Ensure that the intersection result is valid and not empty
                 if not intersection.is_empty and isinstance(intersection, (Polygon, MultiPolygon)):
-                    weight = intersection.area / polygon.area
+                    intersection_area = intersection.area
 
-                    # Gather identity columns and weight columns data
+                    if intersection_area < min_intersection_area:
+                        continue
+
+                    weight = intersection_area / polygon.area
                     data = {col: poly_row[col] for col in col_identity}
                     data.update({f"{col}W": poly_row[col] * weight for col in col_weight})
-                    data["originalPolyID"] = poly_row[
-                        "record"
-                    ]  # Assuming 'record' holds the identifier of original polygons
-                    data["gridPolyID"] = grid_row["id"]  # 'id' holds the identifier of grid cells
-
-                    # Add area weight and geometry to the data dictionary
+                    data["originalPolyID"] = poly_row["record"]
+                    data["gridPolyID"] = grid_row["id"]
                     data["areaWeight"] = weight
                     data["geometry"] = intersection
-
-                    # Create a unique ID for the resulting polygon based on the original and grid IDs
                     data["outID"] = f"{data['originalPolyID']}-{data['gridPolyID']}"
 
                     results.append(data)
 
-    # Convert the results to a GeoDataFrame
     chopped_gdf = gpd.GeoDataFrame(
         results,
         columns=list(results[0].keys())
         if results
         else col_identity + col_weight + ["originalPolyID", "gridPolyID", "areaWeight", "geometry", "outID"],
     )
-
-    # Preserve the CRS of the input GeoDataFrame
     chopped_gdf.crs = spdf.crs
 
     # Return the chopped GeoDataFrame
@@ -472,39 +499,34 @@ def aggregate_polygons(
     col_funcs: List[Union[str, Callable]],
     by: List[str],
     min_area: Optional[float] = 0.0,
+    min_area_proportion_threshold: float = 1e-6,  # New parameter to avoid too small area proportions
 ) -> gpd.GeoDataFrame:
     """
-    Aggregates attributes of polygons within a spatial grid,
-    grouped by specified criteria and weighted by area overlap.
-
-    This function intersects two GeoDataFrames to find the overlapping areas and aggregates
-    specified attributes based on these areas. The aggregation considers only those parts of the
-    polygons that meet a minimum area proportion threshold.
+    Aggregates attributes of polygons within a spatial grid, grouped by specified criteria
+    and weighted by area overlap. Adjusted to handle small area proportions.
 
     Args:
         spdf (gpd.GeoDataFrame): The GeoDataFrame containing polygons to be aggregated.
-        grid_spdf (gpd.GeoDataFrame): The GeoDataFrame containing the grid to which polygons will be aggregated.
-        col_names (List[str]): List of column names whose values will be aggregated.
-        col_funcs (List[Union[str, Callable]]): List of functions or function names to be used for aggregation.
-                                                These should correspond one-to-one with `col_names`.
-        by (List[str]): List of column names in `spdf` to group by during aggregation.
-        min_area (Optional[float]): The minimum proportion of area overlap for the aggregation to be considered valid.
-                          Values should be between 0 and 1.
+        grid_spdf (gpd.GeoDataFrame): The GeoDataFrame containing the grid for aggregation.
+        col_names (List[str]): List of column names for aggregation.
+        col_funcs (List[Union[str, Callable]]): Functions for aggregation.
+        by (List[str]): Column names to group by during aggregation.
+        min_area (Optional[float]): Minimum area overlap for valid aggregation.
+        min_area_proportion_threshold (float): Threshold to avoid too small area proportions.
 
     Returns:
-        gpd.GeoDataFrame: A GeoDataFrame with the grid polygons as geometries and aggregated values as attributes.
+        gpd.GeoDataFrame: Aggregated GeoDataFrame.
     """
     min_area = max(min(min_area, 1), 0)
 
-    # Reset index to ensure that index columns will be present after overlay
     spdf = spdf.reset_index().rename(columns={"index": "index_spdf"})
     grid_spdf = grid_spdf.reset_index().rename(columns={"index": "index_grid"})
 
-    # Step 1: Calculate the intersections (overlays) between spdf and grid_spdf
+    # Step 1: Calculate intersections
     intersections = gpd.overlay(spdf, grid_spdf, how="intersection")
     intersections["area"] = intersections.geometry.area
 
-    # Step 2: Calculate the proportion of the area of spdf that is covered by each intersection
+    # Step 2: Calculate area proportion
     intersections = intersections.merge(
         spdf[["index_spdf", "geometry"]].rename(columns={"geometry": "geometry_spdf"}),
         left_on="index_spdf",
@@ -512,22 +534,28 @@ def aggregate_polygons(
         how="left",
     )
     intersections["area_proportion"] = intersections["area"] / intersections["geometry_spdf"].area
+    intersections["area_proportion"] = intersections["area_proportion"].clip(lower=min_area_proportion_threshold)
 
-    # Drop rows that don't meet the minimum area condition
+    # Exclude small intersections
     intersections = intersections[intersections["area_proportion"] >= min_area]
 
-    # Step 3: Calculate the effective area weighted values for each attribute
+    # Step 3: Weighted value calculation
     aggregation_dict = {col: "sum" for col in col_names}
-    aggregation_dict["area_proportion"] = "sum"  # Ensure we sum the 'area' as well
+    aggregation_dict["area_proportion"] = "sum"
 
     for col, _func in zip(col_names, col_funcs):
         intersections[col] = intersections[col] * intersections["area_proportion"]
 
-    # Step 4: Aggregate the weighted values by the specified grouping columns
+    # Step 4: Aggregate values
     aggregated_data = intersections.groupby(by).agg(aggregation_dict).reset_index()
 
-    # Step 5: Merge the aggregated data back to the grid
-    aggregated_gdf = grid_spdf.merge(aggregated_data, how="left", left_on="id", right_on=by)
+    # Step 5: Merge with grid
+    aggregated_gdf = grid_spdf.merge(
+        aggregated_data,
+        how="left",
+        left_on="id",
+        right_on=by,
+    )
 
     # Step 6: Scale the aggregated values up if necessary
     mean_grid_area = grid_spdf.geometry.area.mean()
@@ -537,9 +565,10 @@ def aggregate_polygons(
             mean_grid_area / (aggregated_gdf["area_proportion"] * mean_grid_area)
         )
 
-    # Drop columns that are no longer needed to clean up the DataFrame
+    # Drop unnecessary columns
     drop_cols = ["id", "index_grid", "gridPolyID"]
     aggregated_gdf.drop(columns=drop_cols, inplace=True)
+
     return aggregated_gdf.dropna(subset=col_names)
 
 
@@ -552,64 +581,88 @@ def smooth_polygons(
     spdf: gpd.GeoDataFrame,
     formula: str,
     spdf_pred: gpd.GeoDataFrame = None,
-    col_identity: Optional[list] = None,
 ) -> gpd.GeoDataFrame:
     """
-    Smooths the polygons using Kriging.
+    Smooths the polygons using Kriging with an adapted variogram model.
 
     Args:
-    spdf (gpd.GeoDataFrame): The input GeoDataFrame.
-    formula (str): The formula for the variogram.
-    spdf_pred (gpd.GeoDataFrame, optional): The GeoDataFrame for prediction. Defaults to None.
-    col_identity (list, optional): Columns to preserve in the output. Defaults to None.
-    n_cores (int, optional): Number of cores to use for parallelization. Defaults to 1.
-    **kwargs: Additional arguments for the Kriging function.
+        spdf (gpd.GeoDataFrame): The input GeoDataFrame.
+        formula (str): The formula for the variogram.
+        spdf_pred (gpd.GeoDataFrame, optional): The GeoDataFrame for prediction. Defaults to None.
+        col_identity (list, optional): Columns to preserve in the output. Defaults to None.
 
     Returns:
-    gpd.GeoDataFrame: The smoothed polygons.
+        gpd.GeoDataFrame: The smoothed polygons.
     """
     if spdf_pred is None:
         spdf_pred = spdf
 
-    crs = spdf.crs
-
-    # Transform to WGS 84 for Kriging
-    spdf = spdf.to_crs(CRS.from_epsg(4326))
-    spdf_pred = spdf_pred.to_crs(CRS.from_epsg(4326))
-
     # Extracting the dependent and independent variables from the formula
-    y_var, x_var = formula.split("~")
+    y_var, _ = formula.split("~")
     y_var = y_var.strip()
-    x_vars = [var.strip() for var in x_var.split("+")]
 
-    # Prepare data for Kriging
-    x = spdf.geometry.x
-    y = spdf.geometry.y
+    # Apply transformation if necessary
+    if "log(" in y_var:
+        variable_name = y_var.split("(")[1].strip(")")
+
+        if variable_name not in spdf.columns:
+            raise ValueError(f"Column '{variable_name}' does not exist in the input GeoDataFrame.")
+
+        if spdf[variable_name].isna().any():
+            raise ValueError(f"Column '{variable_name}' contains NA values.")
+
+        spdf[variable_name] = np.log(spdf[variable_name])
+        y_var = variable_name
+
+    # Prepare data for Kriging using centroids of polygons
+    centroids = spdf.geometry.centroid
+    x = centroids.x
+    y = centroids.y
     z = spdf[y_var].values
-    x_pred = spdf_pred.geometry.x
-    y_pred = spdf_pred.geometry.y
 
-    # Perform Ordinary Kriging
-    ok = OrdinaryKriging(x, y, z, variogram_model="spherical", **kwargs)
+    centroids_pred = spdf_pred.geometry.centroid
+    x_pred = centroids_pred.x
+    y_pred = centroids_pred.y
+
+    # Fit the variogram model and perform Ordinary Kriging
+    # NOTE: This is a simple approach. For more complex data, consider using automated variogram fitting
+    # Assuming 'z' contains log-transformed values
+    ok = OrdinaryKriging(
+        x,
+        y,
+        z,
+        variogram_model="spherical",
+        enable_plotting=False,
+        nlags=20,
+        verbose=True,
+        weight=True,
+        coordinates_type="geographic",
+    )
+
     z_pred, ss = ok.execute("points", x_pred, y_pred)
 
-    # Constructing the result GeoDataFrame
-    geometry = [Point(xp, yp) for xp, yp in zip(x_pred, y_pred)]
-    result_df = pd.DataFrame({y_var: z_pred}, index=spdf_pred.index)
-    result_gdf = gpd.GeoDataFrame(result_df, geometry=geometry, crs=CRS.from_epsg(4326))
+    # Create the result GeoDataFrame
+    result_gdf = spdf_pred.copy()
+    result_gdf["logMassKgMean"] = z_pred
+    result_gdf["logMassKgVar"] = ss  # Semivariance as a proxy for variance
 
-    # Transform back to original projection
-    result_gdf = result_gdf.to_crs(crs)
-    spdf = spdf.to_crs(crs)
-    spdf_pred = spdf_pred.to_crs(crs)
+    # Convert lognormal mean and variance to normal scale
+    result_gdf["massKgMean"] = lognormal_to_normal(
+        result_gdf["logMassKgMean"],
+        result_gdf["logMassKgVar"],
+        "mean",
+    )
+    result_gdf["massKgVar"] = lognormal_to_normal(
+        result_gdf["logMassKgMean"],
+        result_gdf["logMassKgVar"],
+        "var",
+    )
 
-    if col_identity is not None:
-        for col in col_identity:
-            result_gdf[col] = spdf_pred[col]
+    # Calculate yield in mg/ha
+    result_gdf["yieldMgHaMean"] = yield_equation_mgha(
+        result_gdf["massKgMean"],
+        result_gdf["effectiveAreaWUp"],
+    )
+    result_gdf["yieldMgHaVar"] = yield_equation_mgha(1, result_gdf["effectiveAreaWUp"]) ** 2 * result_gdf["massKgVar"]
 
     return result_gdf
-
-
-# =============================================================================
-# STEP 7: post-processing polygons
-# =============================================================================
