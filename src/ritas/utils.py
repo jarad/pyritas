@@ -1,3 +1,4 @@
+from math import exp
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -15,6 +16,7 @@ UTM_MIN_EASTING = 166000
 UTM_MAX_EASTING = 834000
 UTM_MIN_NORTHING = 0
 UTM_MAX_NORTHING = 10000000
+MAX_YIELD_THRESHOLD = 10000
 
 
 def is_in_utm_range(easting: ArrayLike, northing: ArrayLike) -> bool:
@@ -86,36 +88,39 @@ def yield_equation_mgha(mass_kg: float, area_m2: float) -> float:
     # Conversion factors
     kg_to_mg = 0.001  # 1 kilogram = 0.001 megagram
     m2_to_ha = 0.0001  # 1 square meter = 0.0001 hectare
-    return 10 * (mass_kg * kg_to_mg) / (area_m2 * m2_to_ha)
+    yield_values = 10 * (mass_kg * kg_to_mg) / (area_m2 * m2_to_ha)
+    too_high_yields = yield_values > MAX_YIELD_THRESHOLD  # or some threshold that is considered too high
+    if too_high_yields.any():
+        logging.warning("High yields calculated at indices: %s", too_high_yields[too_high_yields].index.tolist())
+
+    return yield_values
 
 
-def lognormal_to_normal(mean: float, variance: float, what: str) -> float:
+def lognormal_to_normal(mean: float, variance: float, value_type: str = "mean") -> Union[float, np.ndarray]:
     """
     Transform the parameter value from lognormal to normal distribution.
 
     Args:
-        mean: The mean of the lognormal distribution.
-        variance: The variance of the lognormal distribution.
-        what: The name of the value to return ('mean', 'var', or 'median').
+        mean: The mean of the lognormal distribution, can be a float or a Pandas Series.
+        variance: The variance of the lognormal distribution, can be a float or a Pandas Series.
+        value_type: The type of the value to return ('mean' or 'var' or 'median').
 
     Returns:
-        The transformed value.
-
-    Raises:
-        ValueError: If 'what' is not 'mean', 'var', or 'median'.
+        The transformed value, will be a float if input is float, or a Pandas Series if input is Series.
 
     Examples:
         >>> lognormal_to_normal(0, 1, 'mean')
         1.6487212707001282
     """
-    if what == "mean":
-        return exp(mean + 0.5 * variance)
-    if what == "var":
-        return exp(2 * mean + variance) * (exp(variance) - 1)
-    if what == "median":
-        return exp(mean)
-
-    raise ValueError("Parameter 'what' should be 'mean', 'var', or 'median'.")
+    match value_type:
+        case "mean":
+            return np.exp(mean + 0.5 * variance)
+        case "var":
+            return (np.exp(variance) - 1) * np.exp(2 * mean + variance)
+        case "median":
+            return np.exp(mean)
+        case _:
+            raise ValueError("Parameter 'value_type' should be 'mean' or 'var'.")
 
 
 def grain_market_moisture(crop_string: str) -> List[float]:
