@@ -1,0 +1,14 @@
+dependencies:
+  - coverage
+  - pandas
+  - geopandas
+  - matplotlib-base
+  - poetry
+  - pyarrow
+  - pykrige
+  - pyproj
+  - pytest
+  - pytest-cov
+  - shapely
+  - streamlit
+  - tqdm
