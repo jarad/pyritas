@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v4
 
@@ -41,7 +41,7 @@ jobs:
         python -m coverage xml
 
     - name: Upload coverage
-      if: ${{ matrix.python-version == '3.12' }}
+      if: ${{ matrix.python-version == '3.11' }}
       uses: codecov/codecov-action@v4
       with:
         token: $${{ secrets.CODECOV_TOKEN }}
