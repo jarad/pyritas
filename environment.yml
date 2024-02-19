@@ -8,6 +8,7 @@ dependencies:
   - pyproj
   - pytest
   - pytest-cov
+  - setuptools_scm
   - shapely
   - streamlit
   - tqdm
