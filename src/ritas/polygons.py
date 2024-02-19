@@ -1,7 +1,7 @@
 import logging
 import warnings
 from functools import wraps
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -62,8 +62,8 @@ def make_bounding_box(
     logging.info("Running make_bounding_box...")
 
     # prepare the input arrays
-    x0, x1 = np.r_[np.NaN, x[:-1]], x
-    y0, y1 = np.r_[np.NaN, y[:-1]], y
+    x0, x1 = np.r_[np.nan, x[:-1]], x
+    y0, y1 = np.r_[np.nan, y[:-1]], y
 
     # Compute distance of the vertices to the centroid
     h = 0.5 * w  # half width
@@ -232,8 +232,8 @@ def crop_polygon(
 
 def process_single_polygon(
     poly: Polygon,
-    reference_polygons: List[Polygon],
-) -> List[Polygon]:
+    reference_polygons: list[Polygon],
+) -> list[Polygon]:
     cropped_list = []
     for ref_poly in reference_polygons:
         if poly.within(ref_poly):
@@ -415,8 +415,8 @@ def make_grid(
 def chop_polygons(
     spdf: gpd.GeoDataFrame,
     grid_spdf: gpd.GeoDataFrame,
-    col_identity: List[str],
-    col_weight: List[str],
+    col_identity: list[str],
+    col_weight: list[str],
     tol: float = 1e-8,
     min_intersection_area: float = 1e-4,  # Minimum intersection area threshold
 ) -> gpd.GeoDataFrame:
@@ -495,9 +495,9 @@ def chop_polygons(
 def aggregate_polygons(
     spdf: gpd.GeoDataFrame,
     grid_spdf: gpd.GeoDataFrame,
-    col_names: List[str],
-    col_funcs: List[Union[str, Callable]],
-    by: List[str],
+    col_names: list[str],
+    col_funcs: list[Union[str, Callable]],
+    by: list[str],
     min_area: Optional[float] = 0.0,
     min_area_proportion_threshold: float = 1e-6,  # New parameter to avoid too small area proportions
 ) -> gpd.GeoDataFrame:
@@ -508,9 +508,9 @@ def aggregate_polygons(
     Args:
         spdf (gpd.GeoDataFrame): The GeoDataFrame containing polygons to be aggregated.
         grid_spdf (gpd.GeoDataFrame): The GeoDataFrame containing the grid for aggregation.
-        col_names (List[str]): List of column names for aggregation.
-        col_funcs (List[Union[str, Callable]]): Functions for aggregation.
-        by (List[str]): Column names to group by during aggregation.
+        col_names (list[str]): List of column names for aggregation.
+        col_funcs (list[Union[str, Callable]]): Functions for aggregation.
+        by (list[str]): Column names to group by during aggregation.
         min_area (Optional[float]): Minimum area overlap for valid aggregation.
         min_area_proportion_threshold (float): Threshold to avoid too small area proportions.
 

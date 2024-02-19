@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -20,12 +20,12 @@ def plot_map(
     fname: Optional[str] = None,
     axis_off: bool = True,
     edge_color: str = "green",
-    figsize: Tuple[float, float] = (20, 20),
+    figsize: tuple[float, float] = (20, 20),
     dpi: int = 300,
     title: Optional[str] = None,
     number: bool = False,
     ax: Optional[plt.Axes] = None,
-) -> Tuple[plt.Figure, plt.Axes]:
+) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot and save a GeoDataFrame boundary map with filled colors based on specified column values.
 
