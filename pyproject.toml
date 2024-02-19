@@ -2,38 +2,41 @@
 name = "ritas"
 requires-python = ">= 3.9"
 dependencies = [
-    "geopandas",
-    "matplotlib",
-    "pandas",
-    "pyarrow",
-    "pykrige",
-    "pyproj",
-    "shapely",
-    "streamlit",
-    "tqdm",
+  "geopandas",
+  "matplotlib",
+  "pandas",
+  "pyarrow",
+  "pykrige",
+  "pyproj",
+  "shapely",
+  "streamlit",
+  "tqdm",
 ]
-dynamic = ["version"]
-
-[tool.setuptools.dynamic]
-version.attr = "ritas.__version__"
+dynamic = [
+  "version",
+]
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
 
 [build-system]
-requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools",
+  "setuptools_scm",
+]
+
+[tool.setuptools_scm]
+# can be empty if no extra settings are needed, presence enables setuptools_scm
 
 [project.license]
 file = "LICENSE"
 
 [tool.pytest.ini_options]
-minversion = "7.0"
-addopts = """
---doctest-modules \
---cov=./ \
---cov-append \
---cov-report html:tests/reports/coverage-html \
---cov-report xml:tests/reports/coverage.xml \
---ignore=docs/
-"""
 testpaths = [
     'tests',
 ]
@@ -106,30 +109,3 @@ max-statements = 80
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py311, pypy3
-isolated_build = True
-
-[gh-actions]
-python =
-    3.11: py311
-    pypy-3.9: pypy3
-
-[gh-actions:env]
-PLATFORM =
-    ubuntu-latest: linux
-    macos-latest: macos
-    windows-latest: windows
-
-[testenv]
-passenv = GITHUB_*
-deps =
-    coverage[toml]
-    pytest
-    pytest-cov
-commands =
-    coverage run -m pytest
-"""
