@@ -12,6 +12,14 @@ dependencies = [
     "streamlit",
     "tqdm",
 ]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version.attr = "pyritas.__version__"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [project.license]
 file = "LICENSE"
