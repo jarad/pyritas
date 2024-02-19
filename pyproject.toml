@@ -1,5 +1,5 @@
 [project]
-name = "pyritas"
+name = "ritas"
 requires-python = ">= 3.9"
 dependencies = [
     "geopandas",
@@ -15,7 +15,7 @@ dependencies = [
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
-version.attr = "pyritas.__version__"
+version.attr = "ritas.__version__"
 
 [build-system]
 requires = ["setuptools"]
