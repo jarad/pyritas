@@ -1,12 +1,14 @@
+"""Tbd."""
+import logging
 from math import exp
-from typing import List, Tuple, Union
+from typing import Union
 
 import numpy as np
 import pyproj
 from pyproj import CRS
 
 Number = Union[int, float]
-ArrayLike = Union[List[Number], np.ndarray]
+ArrayLike = Union[list[Number], np.ndarray]
 
 MIN_LONGITUDE = -180
 MAX_LONGITUDE = 180
@@ -52,7 +54,7 @@ def is_in_longitude_range(lon: ArrayLike) -> bool:
     return np.min(lon) > MIN_LONGITUDE and np.max(lon) < MAX_LONGITUDE
 
 
-def convert_to_utm(lon: ArrayLike, lat: ArrayLike, proj4string: str) -> Tuple[ArrayLike, ArrayLike]:
+def convert_to_utm(lon: ArrayLike, lat: ArrayLike, proj4string: str) -> tuple[ArrayLike, ArrayLike]:
     """
     Convert longitude and latitude to UTM only if they are not already in UTM format.
     """
@@ -112,18 +114,16 @@ def lognormal_to_normal(mean: float, variance: float, value_type: str = "mean") 
         >>> lognormal_to_normal(0, 1, 'mean')
         1.6487212707001282
     """
-    match value_type:
-        case "mean":
-            return np.exp(mean + 0.5 * variance)
-        case "var":
-            return (np.exp(variance) - 1) * np.exp(2 * mean + variance)
-        case "median":
-            return np.exp(mean)
-        case _:
-            raise ValueError("Parameter 'value_type' should be 'mean' or 'var'.")
+    if value_type == "mean":
+        return np.exp(mean + 0.5 * variance)
+    if value_type == "var":
+        return (np.exp(variance) - 1) * np.exp(2 * mean + variance)
+    if value_type == "median":
+        return np.exp(mean)
+    raise ValueError("Parameter 'value_type' should be 'mean' or 'var'.")
 
 
-def grain_market_moisture(crop_string: str) -> List[float]:
+def grain_market_moisture(crop_string: str) -> list[float]:
     """
     Return the nominal market moisture content of a crop.
 
