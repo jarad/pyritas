@@ -1,73 +1,20 @@
-[build-system]
-build-backend = "poetry.core.masonry.api"
-requires = [
-  "poetry-core",
+[project]
+name = "pyritas"
+requires-python = ">= 3.9"
+dependencies = [
+    "geopandas",
+    "matplotlib",
+    "pandas",
+    "pyarrow",
+    "pykrige",
+    "pyproj",
+    "shapely",
+    "streamlit",
+    "tqdm",
 ]
-
-[tool.poetry]
-name = "ritas"
-version = "0.1.0"
-description = ""
-authors = ["benthecoder <benthecoder07@gmail.com>"]
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-geopandas = ">=0.14.0"
-numpy = ">=1.26.0"
-pandas = ">=2.1.1"
-pyproj = ">=3.6.1"
-shapely = ">=2.0.1"
-matplotlib = ">=3.8.0"
-tqdm = ">=4.66.1"
-folium = ">=0.14.0"
-mapclassify = ">=2.6.1"
-streamlit = ">=1.27.2"
-rtree = ">=1.1.0"
-pykrige = ">=1.7.1"
 
 [project.license]
 file = "LICENSE"
-
-[tool.poetry.group.linters]
-optional = true
-
-
-[tool.poetry.group.linters.dependencies]
-ruff = '>=0.0.265,<0.0.293'
-
-
-
-
-
-
-
-
-
-
-
-
-
-[tool.poetry.group.tests]
-optional = true
-
-
-[tool.poetry.group.tests.dependencies]
-pytest = '^7.2.2'
-pytest-cov = '^4.0.0'
-tox = '^4.4.8'
-tox-gh-actions = '^3.1.0'
-
-
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.25.2"
-
-[tool.poetry.urls]
-"Source code" = 'https://github.com/Diapolo10/unit_testing'
-"Tracker" = 'https://github.com/Diapolo10/unit_testing/issues'
-"Changelog" = 'https://github.com/Diapolo10/unit_testing/blob/main/CHANGELOG.md'
-
 
 [tool.pytest.ini_options]
 minversion = "7.0"

@@ -32,7 +32,7 @@ jobs:
     - name: Install pyritas
       run: |
         set -e
-        poetry install
+        python -m pip install . --no-deps
 
     - name: Run tests
       run: |

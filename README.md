@@ -2,23 +2,7 @@
 
 How to run
 
-Install [dependencies](https://python-poetry.org/docs/basic-usage/#installing-dependencies)
-
-```bash
-poetry install
-```
-
-Start shell
-
-```bash
-poetry shell
-```
-
-run tests
-
-```bash
-poetry run pytest
-```
+TBD...
 
 ## Examples
 
