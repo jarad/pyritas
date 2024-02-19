@@ -29,15 +29,15 @@ jobs:
         environment-name: prod
         cache-environment: true
 
-    - name: Install pyritas
+    - name: Install ritas
       run: |
         set -e
-        poetry install
+        python -m pip install . --no-deps
 
     - name: Run tests
       run: |
         set -e
-        python -m pytest --cov=pyritas
+        python -m pytest --cov=ritas
         python -m coverage xml
 
     - name: Upload coverage

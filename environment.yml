@@ -3,7 +3,6 @@ dependencies:
   - pandas
   - geopandas
   - matplotlib-base
-  - poetry
   - pyarrow
   - pykrige
   - pyproj
