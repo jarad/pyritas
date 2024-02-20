@@ -2,6 +2,7 @@
 name = "ritas"
 requires-python = ">= 3.9"
 dependencies = [
+  "click",
   "geopandas",
   "matplotlib",
   "pandas",
@@ -30,6 +31,8 @@ requires = [
   "setuptools_scm",
 ]
 
+[project.scripts]
+ritas = "ritas.cli:main"
 [tool.setuptools_scm]
 # can be empty if no extra settings are needed, presence enables setuptools_scm
 
