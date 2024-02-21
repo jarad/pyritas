@@ -1,26 +1,18 @@
 import logging
 import warnings
-from functools import wraps
-from typing import Any, Callable, Optional, Union
+from typing import Callable, Optional, Union
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pyproj
-from joblib import Parallel, delayed
 from pykrige.ok import OrdinaryKriging
 from pyproj import CRS
 from pyproj.exceptions import CRSError
-from rtree import index
-from shapely.errors import GEOSException, TopologicalError
 from shapely.geometry import (
-    GeometryCollection,
     MultiPolygon,
-    Point,
     Polygon,
     box,
 )
-from shapely.ops import transform, unary_union
 from tqdm import tqdm
 
 from ritas.utils import (
@@ -33,11 +25,6 @@ from ritas.utils import (
 warnings.filterwarnings("ignore")
 
 logging.basicConfig(level=logging.INFO)
-
-
-# =============================================================================
-# STEP 1: Create a bounding box around the vehicle
-# =============================================================================
 
 
 def make_bounding_box(
@@ -212,11 +199,6 @@ def make_vehicle_polygons(
     return gdf
 
 
-# ============================================================================
-# STEP 2: Crop polygons
-# ============================================================================
-
-
 def check_polygon_type(
     geom: Union[Polygon, MultiPolygon],
 ) -> Union[Polygon, MultiPolygon, None]:
@@ -309,11 +291,6 @@ def reshape_polygons(
     # Calculate effective area
     spdf["effectiveArea"] = spdf["geometry"].area
     return spdf
-
-
-# =============================================================================
-# STEP 3: Create a grid
-# =============================================================================
 
 
 def make_grid_by_size(
@@ -434,11 +411,6 @@ def make_grid(
     return grid
 
 
-# =============================================================================
-# STEP 4: Chop polygons
-# =============================================================================
-
-
 def chop_polygons(
     spdf: gpd.GeoDataFrame,
     grid_spdf: gpd.GeoDataFrame,
@@ -523,11 +495,6 @@ def chop_polygons(
 
     # Return the chopped GeoDataFrame
     return chopped_gdf
-
-
-# =============================================================================
-# STEP 5: Aggregate chopped polygons
-# =============================================================================
 
 
 def aggregate_polygons(
@@ -619,11 +586,6 @@ def aggregate_polygons(
     aggregated_gdf.drop(columns=drop_cols, inplace=True)
 
     return aggregated_gdf.dropna(subset=col_names)
-
-
-# =============================================================================
-# STEP 6: Smooth polygons
-# =============================================================================
 
 
 def smooth_polygons(

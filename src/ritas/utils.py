@@ -1,6 +1,5 @@
 """Tbd."""
 import logging
-from math import exp
 from typing import Union
 
 import numpy as np

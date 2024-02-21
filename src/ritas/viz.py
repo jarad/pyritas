@@ -5,7 +5,6 @@ from typing import Optional
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib import animation
 from matplotlib.colors import LinearSegmentedColormap
 
 project_dir = Path(__file__).resolve().parents[0].parents[0].parents[0]
