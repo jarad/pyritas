@@ -7,6 +7,13 @@ from ritas.cli import main
 def test_cli() -> None:
     """Test the CLI."""
     runner = CliRunner()
-    result = runner.invoke(main)
+    result = runner.invoke(
+        main,
+        [
+            "--input",
+            "tests/data/ritas.csv",
+            "--output",
+            "tests/data/ritas.tif",
+        ],
+    )
     assert result.exit_code == 0
-    assert result.output == "Hello, world!\n"

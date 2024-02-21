@@ -1,25 +1,35 @@
 # PyRitas
 
-How to run
+A python implementation of the [R RITAS Algorithm](https://github.com/luisdamiano/ritas-pkg),
+which attempts to create smoothed yield maps from raw yield monitor data.
 
-TBD...
+[![PyPI Package](https://img.shields.io/pypi/v/ritas.svg)](https://pypi.python.org/pypi/ritas/)
+[![Conda Package](https://anaconda.org/conda-forge/ritas/badges/version.svg)](https://anaconda.org/conda-forge/ritas)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/ritas.svg)](https://pypi.python.org/pypi/ritas/)
+[![Conda Downloads](https://anaconda.org/conda-forge/ritas/badges/downloads.svg)](https://anaconda.org/conda-forge/ritas)
 
-## Examples
+## Installation
 
-Sample data
+Via PyPI / pip
 
 ```bash
-python src/ritas/main.py data/sample.csv "epsg:26915"
+python -m pip install ritas
 ```
 
-UIowa data
+Via [conda-forge](https://conda-forge.org)
 
 ```bash
-python src/ritas/main.py data/Freddies_2023.csv "+proj=longlat +datum=WGS84 +no_defs"
+conda -c conda-forge install ritas
 ```
 
-## Run the app
+The above will install both the `ritas` python module and a front-end script
+called `ritas`, which can be used like so:
+
+## Example Usage
+
+Read an input file called `yielddata.csv` and create an output file called
+`output.tiff`.
 
 ```bash
-poetry run streamlit run src/ritas/app/main.py
+ritas -i yielddata.csv -o output.tiff
 ```
