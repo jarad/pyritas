@@ -57,6 +57,7 @@ lint.select = [
     'DTZ', # Datetimes
     'ERA', # Commented-out code
     'EXE', # Executable
+    'F',   # pyflakes
     'G',   # Logging format
     'I',   # Isort
     'ICN', # Import conventions
@@ -90,8 +91,7 @@ lint.ignore = [
     'ISC001',   # Implicit str concat
     'PLR0913',  # Too many arguments
 ]
-lint.ignore-init-module-imports = true
-line-length = 120
+line-length = 79
 
 
 [tool.ruff.lint.mccabe]
@@ -100,8 +100,6 @@ max-complexity = 10
 
 
 [tool.ruff.lint.per-file-ignores]
-# https://beta.ruff.rs/docs/rules/
-'__init__.py' = ['F401','F403','F405',]
 'tests/*' = ['ARG', 'PT011', 'S101', 'PLR2004',]
 
 

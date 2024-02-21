@@ -5,12 +5,13 @@ from typing import Optional
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib import animation
 from matplotlib.colors import LinearSegmentedColormap
 
 project_dir = Path(__file__).resolve().parents[0].parents[0].parents[0]
 
-green_cm = LinearSegmentedColormap.from_list("green_cm", ["lightgreen", "green", "darkgreen"], N=256)
+green_cm = LinearSegmentedColormap.from_list(
+    "green_cm", ["lightgreen", "green", "darkgreen"], N=256
+)
 
 
 def plot_map(
@@ -53,7 +54,13 @@ def plot_map(
     if column is None:
         gdf.plot(ax=ax, edgecolor=edge_color, linewidth=0.8, facecolor="none")
     else:
-        gdf.plot(ax=ax, column=column, cmap=cmap, edgecolor=edge_color, linewidth=0.8)
+        gdf.plot(
+            ax=ax,
+            column=column,
+            cmap=cmap,
+            edgecolor=edge_color,
+            linewidth=0.8,
+        )
 
     # Annotate each polygon with its index
     if number:

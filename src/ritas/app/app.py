@@ -3,7 +3,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
-from ritas.polygons import chop_polygons, make_grid, make_vehicle_polygons, reshape_polygons
+from ritas.polygons import (
+    chop_polygons,
+    make_grid,
+    make_vehicle_polygons,
+    reshape_polygons,
+)
 from ritas.viz import plot_coordinates, plot_map
 
 
@@ -56,11 +61,17 @@ def main() -> None:
                 st.pyplot(fig)
 
             with st.spinner("Chopping grid..."):
-                col_identity = [col for col in reshaped_geodf.columns if col not in ["x", "y"]]
+                col_identity = [
+                    col
+                    for col in reshaped_geodf.columns
+                    if col not in ["x", "y"]
+                ]
                 col_identity.append("effectiveArea")
                 col_weight = ["mass", "effectiveArea"]
 
-                chopped = chop_polygons(reshaped_geodf, grid, col_identity, col_weight)
+                chopped = chop_polygons(
+                    reshaped_geodf, grid, col_identity, col_weight
+                )
                 fig = plot_map(chopped)
                 st.pyplot(fig)
 
@@ -69,7 +80,9 @@ def main() -> None:
                 col_names = [f"{col}W" for col in col_weight]
                 col_funcs = [np.sum, np.sum]
 
-                agg_df = aggregate_polygons(chopped, grid, col_names, col_funcs, by=["gridPolyID"])
+                agg_df = aggregate_polygons(
+                    chopped, grid, col_names, col_funcs, by=["gridPolyID"]
+                )
 
                 fig = plot_map(agg_df, column="massWUp")
                 st.pyplot(fig)

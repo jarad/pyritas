@@ -1,32 +1,30 @@
 import logging
 import warnings
-from functools import wraps
-from typing import Any, Callable, Optional, Union
+from typing import Callable, Optional, Union
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pyproj
-from joblib import Parallel, delayed
 from pykrige.ok import OrdinaryKriging
 from pyproj import CRS
 from pyproj.exceptions import CRSError
-from rtree import index
-from shapely.errors import GEOSException, TopologicalError
-from shapely.geometry import GeometryCollection, MultiPolygon, Point, Polygon, box
-from shapely.ops import transform, unary_union
+from shapely.geometry import (
+    MultiPolygon,
+    Polygon,
+    box,
+)
 from tqdm import tqdm
 
-from ritas.utils import convert_to_utm, is_in_utm_range, lognormal_to_normal, yield_equation_mgha
+from ritas.utils import (
+    convert_to_utm,
+    is_in_utm_range,
+    lognormal_to_normal,
+    yield_equation_mgha,
+)
 
 warnings.filterwarnings("ignore")
 
 logging.basicConfig(level=logging.INFO)
-
-
-# =============================================================================
-# STEP 1: Create a bounding box around the vehicle
-# =============================================================================
 
 
 def make_bounding_box(
@@ -67,7 +65,9 @@ def make_bounding_box(
 
     # Compute distance of the vertices to the centroid
     h = 0.5 * w  # half width
-    m = np.where((x1 - x0) != 0, (y1 - y0) / (x1 - x0), np.inf)  # division by zero
+    m = np.where(
+        (x1 - x0) != 0, (y1 - y0) / (x1 - x0), np.inf
+    )  # division by zero
     dx = h / np.sqrt(1 + 1 / m**2)
     dy = -dx / m
 
@@ -97,7 +97,9 @@ def make_bounding_box(
 
     # Combine all coordinates into a dataframe
     return pd.DataFrame(
-        np.column_stack((x0, y0, x1, y1, x01, y01, x02, y02, x11, y11, x12, y12)),
+        np.column_stack(
+            (x0, y0, x1, y1, x01, y01, x02, y02, x11, y11, x12, y12)
+        ),
         columns=[
             "x0",
             "y0",
@@ -140,7 +142,9 @@ def make_vehicle_polygons(
 
     for column in ["x", "y", "swath"]:
         if column not in df.columns:
-            raise ValueError(f"Missing required column '{column}' in the dataframe.")
+            raise ValueError(
+                f"Missing required column '{column}' in the dataframe."
+            )
 
     if not isinstance(proj4string, str):
         raise ValueError("The proj4string must be a string.")
@@ -157,7 +161,9 @@ def make_vehicle_polygons(
         raise ValueError("Coordinates are not in UTM range.")
 
     if not is_utm:
-        df["x"], df["y"] = convert_to_utm(df["x"].values, df["y"].values, proj4string)
+        df["x"], df["y"] = convert_to_utm(
+            df["x"].values, df["y"].values, proj4string
+        )
 
     # Compute vertices of the rectangles for each coordinate
     bounding_box = make_bounding_box(
@@ -169,7 +175,9 @@ def make_vehicle_polygons(
 
     df = pd.concat([df, bounding_box], axis=1)
 
-    df = df.dropna(subset=["x01", "y01", "x02", "y02", "x11", "y11", "x12", "y12"])
+    df = df.dropna(
+        subset=["x01", "y01", "x02", "y02", "x11", "y11", "x12", "y12"]
+    )
 
     polygons = [
         Polygon(
@@ -189,11 +197,6 @@ def make_vehicle_polygons(
     gdf.crs = proj4string
 
     return gdf
-
-
-# ============================================================================
-# STEP 2: Crop polygons
-# ============================================================================
 
 
 def check_polygon_type(
@@ -248,7 +251,9 @@ def process_single_polygon(
     return cropped_list
 
 
-def reshape_polygons(spdf: gpd.GeoDataFrame, verbose: bool = True) -> gpd.GeoDataFrame:
+def reshape_polygons(
+    spdf: gpd.GeoDataFrame, verbose: bool = True
+) -> gpd.GeoDataFrame:
     spdf = spdf.copy()
     spdf["geometry"] = spdf["geometry"].apply(clean_polygon)
     spdf = spdf.dropna(subset=["geometry"])
@@ -257,7 +262,9 @@ def reshape_polygons(spdf: gpd.GeoDataFrame, verbose: bool = True) -> gpd.GeoDat
     sindex = spdf.sindex
     n_last = len(spdf) - 1
 
-    for i in tqdm(range(n_last), disable=not verbose, desc="Reshaping polygons..."):
+    for i in tqdm(
+        range(n_last), disable=not verbose, desc="Reshaping polygons..."
+    ):
         current_geometry = spdf.at[i, "geometry"]
         overlapping_ids = list(sindex.intersection(current_geometry.bounds))
         overlapping_ids = [idx for idx in overlapping_ids if idx > i]
@@ -284,11 +291,6 @@ def reshape_polygons(spdf: gpd.GeoDataFrame, verbose: bool = True) -> gpd.GeoDat
     # Calculate effective area
     spdf["effectiveArea"] = spdf["geometry"].area
     return spdf
-
-
-# =============================================================================
-# STEP 3: Create a grid
-# =============================================================================
 
 
 def make_grid_by_size(
@@ -387,7 +389,9 @@ def make_grid(
         A GeoDataFrame object with the polygons conforming the grid.
     """
     if n is None and (width is None or height is None):
-        raise ValueError("Either `n`, or `width` and `height`, must be non-null.")
+        raise ValueError(
+            "Either `n`, or `width` and `height`, must be non-null."
+        )
 
     if width is not None and height is not None:
         grid = make_grid_by_size(spdf, width, height)
@@ -405,11 +409,6 @@ def make_grid(
         grid = grid.loc[area_ratios[area_ratios > min_area].index]
 
     return grid
-
-
-# =============================================================================
-# STEP 4: Chop polygons
-# =============================================================================
 
 
 def chop_polygons(
@@ -458,7 +457,9 @@ def chop_polygons(
             if polygon.intersects(grid_polygon):
                 intersection = polygon.intersection(grid_polygon)
 
-                if not intersection.is_empty and isinstance(intersection, (Polygon, MultiPolygon)):
+                if not intersection.is_empty and isinstance(
+                    intersection, (Polygon, MultiPolygon)
+                ):
                     intersection_area = intersection.area
 
                     if intersection_area < min_intersection_area:
@@ -466,12 +467,19 @@ def chop_polygons(
 
                     weight = intersection_area / polygon.area
                     data = {col: poly_row[col] for col in col_identity}
-                    data.update({f"{col}W": poly_row[col] * weight for col in col_weight})
+                    data.update(
+                        {
+                            f"{col}W": poly_row[col] * weight
+                            for col in col_weight
+                        }
+                    )
                     data["originalPolyID"] = poly_row["record"]
                     data["gridPolyID"] = grid_row["id"]
                     data["areaWeight"] = weight
                     data["geometry"] = intersection
-                    data["outID"] = f"{data['originalPolyID']}-{data['gridPolyID']}"
+                    data[
+                        "outID"
+                    ] = f"{data['originalPolyID']}-{data['gridPolyID']}"
 
                     results.append(data)
 
@@ -479,17 +487,14 @@ def chop_polygons(
         results,
         columns=list(results[0].keys())
         if results
-        else col_identity + col_weight + ["originalPolyID", "gridPolyID", "areaWeight", "geometry", "outID"],
+        else col_identity
+        + col_weight
+        + ["originalPolyID", "gridPolyID", "areaWeight", "geometry", "outID"],
     )
     chopped_gdf.crs = spdf.crs
 
     # Return the chopped GeoDataFrame
     return chopped_gdf
-
-
-# =============================================================================
-# STEP 5: Aggregate chopped polygons
-# =============================================================================
 
 
 def aggregate_polygons(
@@ -528,13 +533,19 @@ def aggregate_polygons(
 
     # Step 2: Calculate area proportion
     intersections = intersections.merge(
-        spdf[["index_spdf", "geometry"]].rename(columns={"geometry": "geometry_spdf"}),
+        spdf[["index_spdf", "geometry"]].rename(
+            columns={"geometry": "geometry_spdf"}
+        ),
         left_on="index_spdf",
         right_on="index_spdf",
         how="left",
     )
-    intersections["area_proportion"] = intersections["area"] / intersections["geometry_spdf"].area
-    intersections["area_proportion"] = intersections["area_proportion"].clip(lower=min_area_proportion_threshold)
+    intersections["area_proportion"] = (
+        intersections["area"] / intersections["geometry_spdf"].area
+    )
+    intersections["area_proportion"] = intersections["area_proportion"].clip(
+        lower=min_area_proportion_threshold
+    )
 
     # Exclude small intersections
     intersections = intersections[intersections["area_proportion"] >= min_area]
@@ -544,10 +555,14 @@ def aggregate_polygons(
     aggregation_dict["area_proportion"] = "sum"
 
     for col, _func in zip(col_names, col_funcs):
-        intersections[col] = intersections[col] * intersections["area_proportion"]
+        intersections[col] = (
+            intersections[col] * intersections["area_proportion"]
+        )
 
     # Step 4: Aggregate values
-    aggregated_data = intersections.groupby(by).agg(aggregation_dict).reset_index()
+    aggregated_data = (
+        intersections.groupby(by).agg(aggregation_dict).reset_index()
+    )
 
     # Step 5: Merge with grid
     aggregated_gdf = grid_spdf.merge(
@@ -562,7 +577,8 @@ def aggregate_polygons(
     for col in col_names:
         upscaled_col_name = f"{col}Up"
         aggregated_gdf[upscaled_col_name] = aggregated_gdf[col] * (
-            mean_grid_area / (aggregated_gdf["area_proportion"] * mean_grid_area)
+            mean_grid_area
+            / (aggregated_gdf["area_proportion"] * mean_grid_area)
         )
 
     # Drop unnecessary columns
@@ -570,11 +586,6 @@ def aggregate_polygons(
     aggregated_gdf.drop(columns=drop_cols, inplace=True)
 
     return aggregated_gdf.dropna(subset=col_names)
-
-
-# =============================================================================
-# STEP 6: Smooth polygons
-# =============================================================================
 
 
 def smooth_polygons(
@@ -606,7 +617,9 @@ def smooth_polygons(
         variable_name = y_var.split("(")[1].strip(")")
 
         if variable_name not in spdf.columns:
-            raise ValueError(f"Column '{variable_name}' does not exist in the input GeoDataFrame.")
+            raise ValueError(
+                f"Column '{variable_name}' does not exist in the input GeoDataFrame."
+            )
 
         if spdf[variable_name].isna().any():
             raise ValueError(f"Column '{variable_name}' contains NA values.")
@@ -663,6 +676,9 @@ def smooth_polygons(
         result_gdf["massKgMean"],
         result_gdf["effectiveAreaWUp"],
     )
-    result_gdf["yieldMgHaVar"] = yield_equation_mgha(1, result_gdf["effectiveAreaWUp"]) ** 2 * result_gdf["massKgVar"]
+    result_gdf["yieldMgHaVar"] = (
+        yield_equation_mgha(1, result_gdf["effectiveAreaWUp"]) ** 2
+        * result_gdf["massKgVar"]
+    )
 
     return result_gdf

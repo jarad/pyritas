@@ -49,7 +49,9 @@ def main(args: Any) -> None:
 if __name__ == "__main__":
     setup_logging()
 
-    parser = argparse.ArgumentParser(description="Process and visualize vehicle polygons.")
+    parser = argparse.ArgumentParser(
+        description="Process and visualize vehicle polygons."
+    )
     parser.add_argument("input_csv", help="Path to the input CSV file.")
     parser.add_argument(
         "proj4string",
