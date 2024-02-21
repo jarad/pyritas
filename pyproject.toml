@@ -91,7 +91,7 @@ lint.ignore = [
     'PLR0913',  # Too many arguments
 ]
 lint.ignore-init-module-imports = true
-line-length = 120
+line-length = 79
 
 
 [tool.ruff.lint.mccabe]

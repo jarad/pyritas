@@ -9,12 +9,24 @@ from shapely.geometry import Polygon
 @pytest.mark.parametrize(
     ("x", "y", "w", "d", "expected_len"),
     [
-        (np.array([1, 3, 5]), np.array([1, 2, 1]), np.array([2, 2, 2]), np.array([np.nan, 3, 3]), 3),
+        (
+            np.array([1, 3, 5]),
+            np.array([1, 2, 1]),
+            np.array([2, 2, 2]),
+            np.array([np.nan, 3, 3]),
+            3,
+        ),
         (np.array([]), np.array([]), np.array([]), np.array([]), 0),
         (np.array([1]), np.array([1]), np.array([1]), np.array([np.nan]), 1),
     ],
 )
-def test_make_bounding_box(x: np.ndarray, y: np.ndarray, w: np.ndarray, d: np.ndarray, expected_len: int) -> None:
+def test_make_bounding_box(
+    x: np.ndarray,
+    y: np.ndarray,
+    w: np.ndarray,
+    d: np.ndarray,
+    expected_len: int,
+) -> None:
     df = make_bounding_box(x, y, w, d)
     assert df.shape[0] == expected_len
     assert df.shape[1] == 12
@@ -22,7 +34,12 @@ def test_make_bounding_box(x: np.ndarray, y: np.ndarray, w: np.ndarray, d: np.nd
 
 def test_make_bounding_box_input_mismatch() -> None:
     with pytest.raises(ValueError):
-        make_bounding_box(np.array([1, 2]), np.array([1]), np.array([2, 2]), np.array([np.nan, 3]))
+        make_bounding_box(
+            np.array([1, 2]),
+            np.array([1]),
+            np.array([2, 2]),
+            np.array([np.nan, 3]),
+        )
 
 
 def test_make_bounding_box_empty_arrays() -> None:
@@ -85,12 +102,17 @@ def test_make_vehicle_polygons_invalid_proj4string() -> None:
 
 def test_make_vehicle_polygons_invalid_dataframe_type() -> None:
     with pytest.raises(TypeError):
-        make_vehicle_polygons("not_a_dataframe", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+        make_vehicle_polygons(
+            "not_a_dataframe",
+            "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+        )
 
 
 def test_make_vehicle_polygons_coordinates_outside_utm_range() -> None:
     df = pd.DataFrame({"x": [1e10], "y": [1e10], "swath": [2], "d": [np.nan]})
-    proj4string = "+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+    proj4string = (
+        "+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+    )
     with pytest.raises(ValueError):
         make_vehicle_polygons(df, proj4string)
 

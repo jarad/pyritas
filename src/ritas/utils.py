@@ -26,7 +26,8 @@ def is_in_utm_range(easting: ArrayLike, northing: ArrayLike) -> bool:
     Check if values (or arrays of values) for easting and northing are in the typical UTM range.
     """
     return (
-        UTM_MIN_EASTING < np.min(easting) < UTM_MAX_EASTING and UTM_MIN_NORTHING < np.min(northing) < UTM_MAX_NORTHING
+        UTM_MIN_EASTING < np.min(easting) < UTM_MAX_EASTING
+        and UTM_MIN_NORTHING < np.min(northing) < UTM_MAX_NORTHING
     )
 
 
@@ -54,7 +55,9 @@ def is_in_longitude_range(lon: ArrayLike) -> bool:
     return np.min(lon) > MIN_LONGITUDE and np.max(lon) < MAX_LONGITUDE
 
 
-def convert_to_utm(lon: ArrayLike, lat: ArrayLike, proj4string: str) -> tuple[ArrayLike, ArrayLike]:
+def convert_to_utm(
+    lon: ArrayLike, lat: ArrayLike, proj4string: str
+) -> tuple[ArrayLike, ArrayLike]:
     """
     Convert longitude and latitude to UTM only if they are not already in UTM format.
     """
@@ -91,14 +94,21 @@ def yield_equation_mgha(mass_kg: float, area_m2: float) -> float:
     kg_to_mg = 0.001  # 1 kilogram = 0.001 megagram
     m2_to_ha = 0.0001  # 1 square meter = 0.0001 hectare
     yield_values = 10 * (mass_kg * kg_to_mg) / (area_m2 * m2_to_ha)
-    too_high_yields = yield_values > MAX_YIELD_THRESHOLD  # or some threshold that is considered too high
+    too_high_yields = (
+        yield_values > MAX_YIELD_THRESHOLD
+    )  # or some threshold that is considered too high
     if too_high_yields.any():
-        logging.warning("High yields calculated at indices: %s", too_high_yields[too_high_yields].index.tolist())
+        logging.warning(
+            "High yields calculated at indices: %s",
+            too_high_yields[too_high_yields].index.tolist(),
+        )
 
     return yield_values
 
 
-def lognormal_to_normal(mean: float, variance: float, value_type: str = "mean") -> Union[float, np.ndarray]:
+def lognormal_to_normal(
+    mean: float, variance: float, value_type: str = "mean"
+) -> Union[float, np.ndarray]:
     """
     Transform the parameter value from lognormal to normal distribution.
 
@@ -141,4 +151,8 @@ def grain_market_moisture(crop_string: str) -> list[float]:
         "Corn": 15.5,
         "Soybeans": 13,
     }
-    return [moisture_content[crop] for crop in crop_string if crop in moisture_content]
+    return [
+        moisture_content[crop]
+        for crop in crop_string
+        if crop in moisture_content
+    ]
