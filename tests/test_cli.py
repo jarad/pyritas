@@ -11,9 +11,9 @@ def test_cli() -> None:
         main,
         [
             "--input",
-            "tests/data/ritas.csv",
+            "tests/data/square_100m.csv",
             "--output",
-            "tests/data/ritas.tif",
+            "tests/data/square_100m.shp",
         ],
     )
     assert result.exit_code == 0
