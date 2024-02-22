@@ -31,5 +31,5 @@ Read an input file called `yielddata.csv` and create an output file called
 `output.tiff`.
 
 ```bash
-ritas -i yielddata.csv -o output.tiff
+ritas -i yielddata.csv -o output.shp
 ```

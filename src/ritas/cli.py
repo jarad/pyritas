@@ -9,6 +9,8 @@ from pathlib import Path
 
 import click
 
+from ritas.workflows import simple_workflow
+
 
 @click.command(help=__doc__)
 @click.option(
@@ -20,3 +22,4 @@ import click
 def main(infile: Path, outfile: Path) -> None:
     """Run the command line interface for ritas."""
     click.echo(f"I am about to process {infile} -> {outfile}")
+    simple_workflow(infile, outfile)
