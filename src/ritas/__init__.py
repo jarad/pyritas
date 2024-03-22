@@ -1,4 +1,5 @@
 """ritas."""
+
 import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path

@@ -5,6 +5,7 @@ This tool is used to convert an input file with yield monitor data to an output
 grid file.
 
 """
+
 from pathlib import Path
 
 import click
