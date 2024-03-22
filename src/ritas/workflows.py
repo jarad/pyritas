@@ -1,4 +1,5 @@
 """Definition of workflows used by this project."""
+
 from pathlib import Path
 
 from ritas.io import read_input

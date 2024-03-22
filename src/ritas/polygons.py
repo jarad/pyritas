@@ -477,9 +477,9 @@ def chop_polygons(
                     data["gridPolyID"] = grid_row["id"]
                     data["areaWeight"] = weight
                     data["geometry"] = intersection
-                    data[
-                        "outID"
-                    ] = f"{data['originalPolyID']}-{data['gridPolyID']}"
+                    data["outID"] = (
+                        f"{data['originalPolyID']}-{data['gridPolyID']}"
+                    )
 
                     results.append(data)
 
