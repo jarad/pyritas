@@ -10,5 +10,7 @@ dependencies:
   - pytest-cov
   - setuptools_scm
   - shapely
+  # For docs
+  - sphinx
   - streamlit
   - tqdm
