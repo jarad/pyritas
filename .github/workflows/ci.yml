@@ -1,6 +1,10 @@
 name: CI
 on: [push, pull_request]
 
+# Allow actions to write to the repository
+permissions:
+  contents: write
+
 jobs:
   build-and-test:
     defaults:
