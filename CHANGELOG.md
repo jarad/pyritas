@@ -1,4 +1,17 @@
+<!-- markdownlint-configure-file {"MD024": { "siblings_only": true } } -->
 # RITAS Changelog
+
+## Unreleased Version
+
+### API Changes
+
+### New Features
+
+- Added `--swath-width` or `-w` CLI switch to specify a width (#19).
+
+### Bug Fixes
+
+- Corrected the module version detection string.
 
 ## ritas 0.2.0 Release (23 Feb 2024)
 

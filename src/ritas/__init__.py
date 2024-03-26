@@ -1,8 +1,16 @@
 """ritas."""
 
 import os
+from enum import Enum
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+
+
+class ColNames(Enum):
+    """Mapping of where to find data within dataframes."""
+
+    SWATH = "swath"
+
 
 try:
     __version__ = version("ritas")
