@@ -9,6 +9,7 @@ dependencies = [
   "pyarrow",
   "pykrige",
   "pyproj",
+  "rasterio",
   "shapely",
   "streamlit",
   "tqdm",
