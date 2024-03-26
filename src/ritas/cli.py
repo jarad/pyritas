@@ -6,8 +6,6 @@ grid file.
 
 """
 
-from pathlib import Path
-
 import click
 
 from ritas.workflows import simple_workflow
@@ -18,9 +16,19 @@ from ritas.workflows import simple_workflow
     "--input", "-i", "infile", type=click.Path(exists=True), required=True
 )
 @click.option(
+    "--swath-width",
+    "-w",
+    "swath_width",
+    type=float,
+    default=5,
+    help="Width (m) of the swath, over-riding what is in the input file.",
+)
+@click.option(
     "--output", "-o", "outfile", type=click.Path(exists=False), required=True
 )
-def main(infile: Path, outfile: Path) -> None:
+def main(**kwargs: dict) -> None:
     """Run the command line interface for ritas."""
+    infile = kwargs.pop("infile")
+    outfile = kwargs.pop("outfile")
     click.echo(f"I am about to process {infile} -> {outfile}")
-    simple_workflow(infile, outfile)
+    simple_workflow(infile, outfile, **kwargs)

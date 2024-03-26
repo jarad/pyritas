@@ -12,6 +12,8 @@ def test_cli() -> None:
         [
             "--input",
             "tests/data/square_100m.csv",
+            "--swath-width",
+            "10",
             "--output",
             "tests/data/square_100m.shp",
         ],
