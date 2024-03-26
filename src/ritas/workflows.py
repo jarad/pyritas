@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from ritas import ColNames
-from ritas.io import read_input
+from ritas.io import read_input, write_geotiff
 from ritas.polygons import make_grid, make_vehicle_polygons, reshape_polygons
 
 
@@ -26,4 +26,8 @@ def simple_workflow(infile: Path, outfile: Path, **kwargs: dict) -> None:
     reshaped_geodf = reshape_polygons(geodf)
     # Write output
     grid = make_grid(reshaped_geodf, width=5, height=5)
-    grid.to_file(outfile)
+    # output is based on filename extension
+    if outfile.endswith(".tiff"):
+        write_geotiff(grid, outfile)
+    else:
+        grid.to_file(outfile)

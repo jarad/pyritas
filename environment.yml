@@ -8,6 +8,7 @@ dependencies:
   - pyproj
   - pytest
   - pytest-cov
+  - rasterio
   - setuptools_scm
   - shapely
   # For docs
