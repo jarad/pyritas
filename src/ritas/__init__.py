@@ -1,16 +1,26 @@
 """ritas."""
 
+import logging
 import os
-from enum import Enum
+from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
+# Setup a default logger for this package
+LOG = logging.getLogger("ritas")
+LOG.addHandler(logging.NullHandler())
 
-class ColNames(Enum):
+
+@dataclass(frozen=True)
+class DefaultColNames:
     """Mapping of where to find data within dataframes."""
 
-    SWATH = "swath"
+    DISTANCE: str = "d"
+    MASS: str = "mass"
+    SWATH: str = "swath"
 
+
+ColNames = DefaultColNames()
 
 try:
     __version__ = version("ritas")

@@ -1,11 +1,12 @@
 """Tbd."""
 
-import logging
 from typing import Union
 
 import numpy as np
 import pyproj
 from pyproj import CRS
+
+from ritas import LOG
 
 Number = Union[int, float]
 ArrayLike = Union[list[Number], np.ndarray]
@@ -98,7 +99,7 @@ def yield_equation_mgha(mass_kg: float, area_m2: float) -> float:
         yield_values > MAX_YIELD_THRESHOLD
     )  # or some threshold that is considered too high
     if too_high_yields.any():
-        logging.warning(
+        LOG.warning(
             "High yields calculated at indices: %s",
             too_high_yields[too_high_yields].index.tolist(),
         )

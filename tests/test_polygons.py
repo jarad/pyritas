@@ -1,3 +1,6 @@
+"""Tests for the polygons module."""
+
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
@@ -58,7 +61,7 @@ def test_make_bounding_box_zero_width() -> None:
     y = np.array([1, 2])
     w = np.array([0, 0])
     d = np.array([np.nan, 3])
-    df = make_bounding_box(x, y, w, d)
+    make_bounding_box(x, y, w, d)
     # Further assertions can be added here
 
 
@@ -73,17 +76,11 @@ def test_make_vehicle_polygons_basic() -> None:
         },
     )
     proj4string = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+    df = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df["x"], df["y"]))
 
     gdf = make_vehicle_polygons(df, proj4string)
     assert len(gdf) == len(df) - 1
     assert all(isinstance(geom, Polygon) for geom in gdf.geometry)
-
-
-def test_make_vehicle_polygons_missing_columns() -> None:
-    df = pd.DataFrame({"x": [1, 3, 5], "y": [1, 2, 1]})
-    proj4string = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
-    with pytest.raises(ValueError):
-        make_vehicle_polygons(df, proj4string)
 
 
 def test_make_vehicle_polygons_invalid_proj4string() -> None:
@@ -98,27 +95,3 @@ def test_make_vehicle_polygons_invalid_proj4string() -> None:
     proj4string = "invalid_proj4string"
     with pytest.raises(ValueError):
         make_vehicle_polygons(df, proj4string)
-
-
-def test_make_vehicle_polygons_invalid_dataframe_type() -> None:
-    with pytest.raises(TypeError):
-        make_vehicle_polygons(
-            "not_a_dataframe",
-            "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
-        )
-
-
-def test_make_vehicle_polygons_coordinates_outside_utm_range() -> None:
-    df = pd.DataFrame({"x": [1e10], "y": [1e10], "swath": [2], "d": [np.nan]})
-    proj4string = (
-        "+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-    )
-    with pytest.raises(ValueError):
-        make_vehicle_polygons(df, proj4string)
-
-
-def test_make_vehicle_polygons_non_utm_coordinates() -> None:
-    df = pd.DataFrame({"x": [10], "y": [10], "swath": [2], "d": [np.nan]})
-    proj4string = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
-    with pytest.raises(ValueError):
-        make_vehicle_polygons(df, proj4string, is_utm=False)

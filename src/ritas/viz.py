@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from typing import Optional
 
@@ -6,6 +5,8 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
+
+from ritas import LOG
 
 project_dir = Path(__file__).resolve().parents[0].parents[0].parents[0]
 
@@ -40,7 +41,7 @@ def plot_map(
         raise TypeError("gdf must be a GeoDataFrame.")
 
     # Log the beginning of the plotting process
-    logging.info("Creating plot...")
+    LOG.info("Creating plot...")
 
     # Create the plot if no Axes is passed
     if ax is None:
@@ -86,7 +87,7 @@ def plot_map(
     if fname is not None and fig_created:
         fig_path = project_dir / "plots" / fname
         fig.savefig(fig_path, dpi=dpi)
-        logging.info("Plot saved to %s", fig_path)
+        LOG.info("Plot saved to %s", fig_path)
 
     return fig, ax
 

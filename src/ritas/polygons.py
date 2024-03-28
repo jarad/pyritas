@@ -1,4 +1,3 @@
-import logging
 import warnings
 from typing import Callable, Optional, Union
 
@@ -15,16 +14,13 @@ from shapely.geometry import (
 )
 from tqdm import tqdm
 
+from ritas import LOG, ColNames
 from ritas.utils import (
-    convert_to_utm,
-    is_in_utm_range,
     lognormal_to_normal,
     yield_equation_mgha,
 )
 
 warnings.filterwarnings("ignore")
-
-logging.basicConfig(level=logging.INFO)
 
 
 def make_bounding_box(
@@ -57,7 +53,7 @@ def make_bounding_box(
     if not (len(x) == len(y) == len(w) == len(d)):
         raise ValueError("All input arrays must be of the same length.")
 
-    logging.info("Running make_bounding_box...")
+    LOG.info("Running make_bounding_box...")
 
     # prepare the input arrays
     x0, x1 = np.r_[np.nan, x[:-1]], x
@@ -118,9 +114,8 @@ def make_bounding_box(
 
 
 def make_vehicle_polygons(
-    df: pd.DataFrame,
+    geodf: gpd.GeoDataFrame,
     proj4string: str,
-    is_utm: bool = True,
 ) -> gpd.GeoDataFrame:
     """
     Create a gpd.GeoDataFrame object from the dataframe given as an input.
@@ -136,44 +131,23 @@ def make_vehicle_polygons(
     Returns:
         A gpd.GeoDataFrame with one rectangle per row.
     """
-
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input must be a DataFrame.")
-
-    for column in ["x", "y", "swath"]:
-        if column not in df.columns:
-            raise ValueError(
-                f"Missing required column '{column}' in the dataframe."
-            )
-
     if not isinstance(proj4string, str):
         raise ValueError("The proj4string must be a string.")
-
-    if "d" not in df.columns:
-        df["d"] = np.nan
 
     try:
         CRS(proj4string)
     except CRSError as e:
         raise ValueError(f"Invalid proj4string: {e}") from e
 
-    if not is_in_utm_range(df["x"].values, df["y"].values):
-        raise ValueError("Coordinates are not in UTM range.")
-
-    if not is_utm:
-        df["x"], df["y"] = convert_to_utm(
-            df["x"].values, df["y"].values, proj4string
-        )
-
     # Compute vertices of the rectangles for each coordinate
     bounding_box = make_bounding_box(
-        df["x"].values,
-        df["y"].values,
-        df["swath"].values,
-        df["d"].values,
+        geodf.geometry.x,
+        geodf.geometry.y,
+        geodf[ColNames.SWATH].values,
+        geodf[ColNames.DISTANCE].values,
     )
 
-    df = pd.concat([df, bounding_box], axis=1)
+    df = pd.concat([geodf, bounding_box], axis=1)
 
     df = df.dropna(
         subset=["x01", "y01", "x02", "y02", "x11", "y11", "x12", "y12"]
@@ -277,7 +251,7 @@ def reshape_polygons(
                 if cropped:
                     spdf.at[idx, "geometry"] = cropped
             except (ValueError, AttributeError) as e:
-                logging.error(
+                LOG.error(
                     "Error processing geometry at index %s with exception: %s",
                     idx,
                     e,

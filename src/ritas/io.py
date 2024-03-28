@@ -1,5 +1,6 @@
 """RITAS I/O module."""
 
+from dataclasses import asdict
 from pathlib import Path
 
 import geopandas as gpd
@@ -7,8 +8,10 @@ import numpy as np
 import pandas as pd
 import rasterio as rio
 
+from ritas import ColNames
 
-def read_input(infile: Path) -> pd.DataFrame:
+
+def read_input(infile: Path) -> gpd.GeoDataFrame:
     """Read the input file.
 
     Args:
@@ -17,7 +20,27 @@ def read_input(infile: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The input data.
     """
-    return pd.read_csv(infile)
+    if infile.suffix == ".shp":
+        return gpd.read_file(infile)
+    df = pd.read_csv(infile)
+    return gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df["x"], df["y"]))
+
+
+def rectify_input(geodf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Rectify the input data to match what RITAS needs for processing.
+
+    Args:
+        geodf (gpd.GeoDataFrame): The input data.
+
+    Returns:
+        gpd.GeoDataFrame: The rectified data.
+    """
+    # Ensure the input data has the necessary columns
+    for _key, value in asdict(ColNames).items():
+        if value not in geodf.columns:
+            geodf[value] = np.nan
+
+    return geodf
 
 
 def write_geotiff(geodf: gpd.GeoDataFrame, outfile: Path) -> None:

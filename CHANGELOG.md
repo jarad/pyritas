@@ -6,11 +6,13 @@
 ### API Changes
 
 - Depend on `rasterio` for IO support.
+- Standardize log generation via `ritas.LOG`.
 
 ### New Features
 
 - Added `--swath-width` or `-w` CLI switch to specify a width (#19).
 - Support GeoTIFF output (#14).
+- Support Shapefile for RITAS input.
 
 ### Bug Fixes
 
