@@ -1,4 +1,3 @@
-import logging
 import warnings
 from typing import Callable, Optional, Union
 
@@ -15,15 +14,13 @@ from shapely.geometry import (
 )
 from tqdm import tqdm
 
-from ritas import ColNames
+from ritas import LOG, ColNames
 from ritas.utils import (
     lognormal_to_normal,
     yield_equation_mgha,
 )
 
 warnings.filterwarnings("ignore")
-
-logging.basicConfig(level=logging.INFO)
 
 
 def make_bounding_box(
@@ -56,7 +53,7 @@ def make_bounding_box(
     if not (len(x) == len(y) == len(w) == len(d)):
         raise ValueError("All input arrays must be of the same length.")
 
-    logging.info("Running make_bounding_box...")
+    LOG.info("Running make_bounding_box...")
 
     # prepare the input arrays
     x0, x1 = np.r_[np.nan, x[:-1]], x
@@ -254,7 +251,7 @@ def reshape_polygons(
                 if cropped:
                     spdf.at[idx, "geometry"] = cropped
             except (ValueError, AttributeError) as e:
-                logging.error(
+                LOG.error(
                     "Error processing geometry at index %s with exception: %s",
                     idx,
                     e,

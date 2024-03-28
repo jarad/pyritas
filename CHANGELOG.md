@@ -6,6 +6,7 @@
 ### API Changes
 
 - Depend on `rasterio` for IO support.
+- Standardize log generation via `ritas.LOG`.
 
 ### New Features
 

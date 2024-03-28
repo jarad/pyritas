@@ -1,9 +1,14 @@
 """ritas."""
 
+import logging
 import os
 from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+
+# Setup a default logger for this package
+LOG = logging.getLogger("ritas")
+LOG.addHandler(logging.NullHandler())
 
 
 @dataclass(frozen=True)

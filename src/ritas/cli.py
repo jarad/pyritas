@@ -6,10 +6,12 @@ grid file.
 
 """
 
+import logging
 from pathlib import Path
 
 import click
 
+from ritas import LOG
 from ritas.workflows import simple_workflow
 
 
@@ -38,7 +40,10 @@ from ritas.workflows import simple_workflow
 )
 def main(**kwargs: dict) -> None:
     """Run the command line interface for ritas."""
+    # Set up logging
+    logging.basicConfig(level=logging.INFO)
+
     infile = kwargs.pop("infile")
     outfile = kwargs.pop("outfile")
-    click.echo(f"I am about to process {infile} -> {outfile}")
+    LOG.info("I am about to process %s -> %s", infile, outfile)
     simple_workflow(infile, outfile, **kwargs)
