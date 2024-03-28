@@ -11,6 +11,7 @@
 
 - Added `--swath-width` or `-w` CLI switch to specify a width (#19).
 - Support GeoTIFF output (#14).
+- Support Shapefile for RITAS input.
 
 ### Bug Fixes
 

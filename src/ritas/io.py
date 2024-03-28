@@ -17,6 +17,8 @@ def read_input(infile: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The input data.
     """
+    if infile.suffix == ".shp":
+        return gpd.read_file(infile)
     return pd.read_csv(infile)
 
 
