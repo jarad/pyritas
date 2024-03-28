@@ -6,6 +6,8 @@ grid file.
 
 """
 
+from pathlib import Path
+
 import click
 
 from ritas.workflows import simple_workflow
@@ -13,7 +15,11 @@ from ritas.workflows import simple_workflow
 
 @click.command(help=__doc__)
 @click.option(
-    "--input", "-i", "infile", type=click.Path(exists=True), required=True
+    "--input",
+    "-i",
+    "infile",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
 )
 @click.option(
     "--swath-width",
@@ -24,7 +30,11 @@ from ritas.workflows import simple_workflow
     help="Width (m) of the swath, over-riding what is in the input file.",
 )
 @click.option(
-    "--output", "-o", "outfile", type=click.Path(exists=False), required=True
+    "--output",
+    "-o",
+    "outfile",
+    type=click.Path(exists=False, path_type=Path),
+    required=True,
 )
 def main(**kwargs: dict) -> None:
     """Run the command line interface for ritas."""
