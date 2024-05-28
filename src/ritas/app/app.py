@@ -1,5 +1,5 @@
-import geopandas as gpd
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -14,7 +14,8 @@ from ritas.viz import plot_coordinates, plot_map
 
 def main() -> None:
     st.title("RITAS")
-
+    reshaped_geodf = None
+    aggregate_polygons = None
     with st.form("upload_form"):
         st.header("Upload Data File")
         data_file = st.file_uploader("Choose a CSV file", type="csv")
