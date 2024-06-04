@@ -1,6 +1,16 @@
 <!-- markdownlint-configure-file {"MD024": { "siblings_only": true } } -->
 # RITAS Changelog
 
+## ritas Unreleased Version
+
+### API Changes
+
+### New Features
+
+### Bug Fixes
+
+- Rectify input to EPSG:26915 (UTM Zone 15N) (#29).
+
 ## ritas 0.3.0 Release (28 May 2024)
 
 ### API Changes
