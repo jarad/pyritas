@@ -23,7 +23,11 @@ def read_input(infile: Path) -> gpd.GeoDataFrame:
     if infile.suffix == ".shp":
         return gpd.read_file(infile)
     df = pd.read_csv(infile)
-    return gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df["x"], df["y"]))
+    return gpd.GeoDataFrame(
+        df,
+        geometry=gpd.points_from_xy(df["x"], df["y"]),
+        crs="EPSG:26915",
+    )
 
 
 def rectify_input(geodf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -40,7 +44,8 @@ def rectify_input(geodf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         if value not in geodf.columns:
             geodf[value] = np.nan
 
-    return geodf
+    # Ensure that the input geometry is in UTM 26915
+    return geodf.to_crs("EPSG:26915")
 
 
 def write_geotiff(geodf: gpd.GeoDataFrame, outfile: Path) -> None:
