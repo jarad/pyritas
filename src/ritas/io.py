@@ -30,7 +30,7 @@ def read_input(infile: Path) -> gpd.GeoDataFrame:
     )
 
 
-def rectify_input(geodf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def rectify_input(geodf: gpd.GeoDataFrame, **kwargs: dict) -> gpd.GeoDataFrame:
     """Rectify the input data to match what RITAS needs for processing.
 
     Args:
@@ -39,7 +39,15 @@ def rectify_input(geodf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     Returns:
         gpd.GeoDataFrame: The rectified data.
     """
-    # Ensure the input data has the necessary columns
+    # Ensure the input data has a mass field
+    if ColNames.MASS not in geodf.columns:
+        udf = kwargs.get("mass_field")
+        if udf is None or udf not in geodf.columns:
+            raise ValueError(
+                "No mass field provided, please pass -m <field> to CLI."
+            )
+        geodf[ColNames.MASS] = geodf[udf]
+
     for _key, value in asdict(ColNames).items():
         if value not in geodf.columns:
             geodf[value] = np.nan

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import click
 
-from ritas import LOG
+from ritas import LOG, ColNames
 from ritas.workflows import simple_workflow
 
 
@@ -37,6 +37,13 @@ from ritas.workflows import simple_workflow
     "outfile",
     type=click.Path(exists=False, path_type=Path),
     required=True,
+)
+@click.option(
+    "--mass-field",
+    "-m",
+    "mass_field",
+    type=str,
+    default=ColNames.MASS,
 )
 def main(**kwargs: dict) -> None:
     """Run the command line interface for ritas."""
