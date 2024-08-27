@@ -21,7 +21,7 @@ def simple_workflow(infile: Path, outfile: Path, **kwargs: dict) -> None:
     if (sw := kwargs.get("swath_width")) is not None:
         df[ColNames.SWATH] = sw
     # Rectify input
-    df = rectify_input(df)
+    df = rectify_input(df, **kwargs)
     # Create vehicle polygons
     geodf = make_vehicle_polygons(df, "EPSG:26915")
     # Reshape polygons
@@ -32,4 +32,4 @@ def simple_workflow(infile: Path, outfile: Path, **kwargs: dict) -> None:
     if outfile.suffix == ".tiff":
         write_geotiff(grid, outfile)
     else:
-        grid.to_file(outfile)
+        reshaped_geodf.to_file(outfile)
