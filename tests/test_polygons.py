@@ -4,8 +4,9 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
-from ritas.polygons import make_bounding_box, make_vehicle_polygons
 from shapely.geometry import Polygon
+
+from ritas.polygons import make_bounding_box, make_vehicle_polygons
 
 
 # Test cases for make_bounding_box

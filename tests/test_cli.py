@@ -1,6 +1,7 @@
 """Test the CLI module."""
 
 from click.testing import CliRunner
+
 from ritas.cli import main
 
 
