@@ -7,6 +7,8 @@
 
 ### New Features
 
+- Require `rasterio>=1.4.0` due to `rasterize` API usage with GeoTIFF output.
+
 ### Bug Fixes
 
 - Rectify input to EPSG:26915 (UTM Zone 15N) (#29).
