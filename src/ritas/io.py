@@ -7,6 +7,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio as rio
+from rasterio.features import rasterize
 
 from ritas import ColNames
 
@@ -47,6 +48,21 @@ def rectify_input(geodf: gpd.GeoDataFrame, **kwargs: dict) -> gpd.GeoDataFrame:
                 "No mass field provided, please pass -m <field> to CLI."
             )
         geodf[ColNames.MASS] = geodf[udf]
+    if ColNames.SWATH not in geodf.columns:
+        udf = kwargs.get("swath_field")
+        if udf is None or udf not in geodf.columns:
+            raise ValueError(
+                "No swath field provided, please pass -s <field> to CLI."
+            )
+        geodf[ColNames.SWATH] = geodf[udf]
+
+    if ColNames.DISTANCE not in geodf.columns:
+        udf = kwargs.get("distance_field")
+        if udf is None or udf not in geodf.columns:
+            raise ValueError(
+                "No distance field provided, please pass -d <field> to CLI."
+            )
+        geodf[ColNames.DISTANCE] = geodf[udf]
 
     for _key, value in asdict(ColNames).items():
         if value not in geodf.columns:
@@ -60,21 +76,24 @@ def write_geotiff(geodf: gpd.GeoDataFrame, outfile: Path) -> None:
     """Write a GeoDataFrame to a GeoTIFF file.
 
     Args:
+        geodf (gpd.GeoDataFrame): The GeoDataFrame containing polygons.
         outfile (Path): The output file to create.
-        geodf (gpd.GeoDataFrame): The GeoDataFrame to write.
     """
-    # The GeoDataFrame contains point values on a grid, so we need to first
-    # convert it to a raster.
+    # 1. Compute the bounds of the GeoDataFrame
     bounds = geodf.total_bounds
-    # create a 5 meter grid based on the bounds
-    x = range(int(bounds[0]), int(bounds[2]), 5)
-    y = range(int(bounds[1]), int(bounds[3]), 5)
-    # create a raster
-    raster = np.zeros((len(y), len(x)))
-    # fill the raster with values
-    for _i, row in geodf.iterrows():
-        pt = row.geometry.centroid
-        raster[int((pt.y - y[0]) / 5)][int((pt.x - x[0]) / 5)] = 0  # FIXME
+    ny = int((bounds[3] - bounds[1]) / 5)
+    nx = int((bounds[2] - bounds[0]) / 5)
+    aff = rio.transform.from_bounds(*bounds, nx, ny)
+    raster = rasterize(
+        geodf[["geometry", ColNames.MASS]],
+        out_shape=(ny, nx),
+        fill=np.nan,
+        transform=aff,
+        nodata=np.nan,
+        masked=True,
+        all_touched=True,  # maybe suboptimal
+        dtype=rio.float32,
+    )
     with rio.open(
         outfile,
         "w",
@@ -84,6 +103,6 @@ def write_geotiff(geodf: gpd.GeoDataFrame, outfile: Path) -> None:
         count=1,
         dtype=rio.float32,
         crs=geodf.crs,
-        transform=rio.transform.from_origin(bounds[0], bounds[3], 5, 5),
+        transform=aff,
     ) as dst:
         dst.write(np.flipud(raster), 1)

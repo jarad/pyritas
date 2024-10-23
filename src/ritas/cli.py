@@ -28,7 +28,7 @@ from ritas.workflows import simple_workflow
     "-w",
     "swath_width",
     type=float,
-    default=5,
+    default=None,
     help="Width (m) of the swath, over-riding what is in the input file.",
 )
 @click.option(
@@ -44,6 +44,20 @@ from ritas.workflows import simple_workflow
     "mass_field",
     type=str,
     default=ColNames.MASS,
+)
+@click.option(
+    "--swath-field",
+    "-s",
+    "swath_field",
+    type=str,
+    default=ColNames.SWATH,
+)
+@click.option(
+    "--distance-field",
+    "-d",
+    "distance_field",
+    type=str,
+    default=ColNames.DISTANCE,
 )
 def main(**kwargs: dict) -> None:
     """Run the command line interface for ritas."""
