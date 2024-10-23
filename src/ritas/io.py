@@ -47,6 +47,21 @@ def rectify_input(geodf: gpd.GeoDataFrame, **kwargs: dict) -> gpd.GeoDataFrame:
                 "No mass field provided, please pass -m <field> to CLI."
             )
         geodf[ColNames.MASS] = geodf[udf]
+    if ColNames.SWATH not in geodf.columns:
+        udf = kwargs.get("swath_field")
+        if udf is None or udf not in geodf.columns:
+            raise ValueError(
+                "No swath field provided, please pass -s <field> to CLI."
+            )
+        geodf[ColNames.SWATH] = geodf[udf]
+
+    if ColNames.DISTANCE not in geodf.columns:
+        udf = kwargs.get("distance_field")
+        if udf is None or udf not in geodf.columns:
+            raise ValueError(
+                "No distance field provided, please pass -d <field> to CLI."
+            )
+        geodf[ColNames.DISTANCE] = geodf[udf]
 
     for _key, value in asdict(ColNames).items():
         if value not in geodf.columns:

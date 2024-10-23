@@ -45,6 +45,20 @@ from ritas.workflows import simple_workflow
     type=str,
     default=ColNames.MASS,
 )
+@click.option(
+    "--swath-field",
+    "-s",
+    "swath_field",
+    type=str,
+    default=ColNames.SWATH,
+)
+@click.option(
+    "--distance-field",
+    "-d",
+    "distance_field",
+    type=str,
+    default=ColNames.DISTANCE,
+)
 def main(**kwargs: dict) -> None:
     """Run the command line interface for ritas."""
     # Set up logging

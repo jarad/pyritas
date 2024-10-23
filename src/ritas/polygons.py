@@ -143,8 +143,8 @@ def make_vehicle_polygons(
     bounding_box = make_bounding_box(
         geodf.geometry.x,
         geodf.geometry.y,
-        geodf[ColNames.SWATH].values,
-        geodf[ColNames.DISTANCE].values,
+        geodf[ColNames.SWATH].values,  # TODO: units
+        geodf[ColNames.DISTANCE].values,  # TODO: units
     )
 
     df = pd.concat([geodf, bounding_box], axis=1)
