@@ -28,7 +28,7 @@ from ritas.workflows import simple_workflow
     "-w",
     "swath_width",
     type=float,
-    default=5,
+    default=None,
     help="Width (m) of the swath, over-riding what is in the input file.",
 )
 @click.option(
