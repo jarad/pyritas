@@ -1,9 +1,15 @@
 <!-- markdownlint-configure-file {"MD024": { "siblings_only": true } } -->
 # RITAS Changelog
 
-## ritas 0.4.0 Release (19 Nov 2024)
+## Unreleased Version
 
 ### API Changes
+
+### New Features
+
+### Bug Fixes
+
+## ritas 0.4.0 Release (19 Nov 2024)
 
 ### New Features
 
