@@ -65,5 +65,6 @@ cython_debug/
 
 /tests/reports
 
+build/
 dist/
 **/*egg-info
