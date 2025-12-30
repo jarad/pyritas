@@ -8,14 +8,14 @@ requires = [
 [project]
 name = "ritas"
 license.file = "LICENSE"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 
 dynamic = [
@@ -40,8 +40,9 @@ scripts.ritas = "ritas.cli:main"
 # can be empty if no extra settings are needed, presence enables setuptools_scm
 
 [tool.ruff]
-line-length = 79
+target-version = "py310"
 
+line-length = 79
 exclude = [
   "**/*.ipynb",
 ]

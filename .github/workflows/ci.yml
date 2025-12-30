@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.12", "3.13"]
+        python-version: ["3.10", "3.13", "3.14"]
     steps:
     - uses: actions/checkout@v4
 
@@ -27,7 +27,6 @@ jobs:
         condarc: |
           channels:
             - conda-forge
-            - defaults
         create-args: >-
           python=${{ matrix.python-version }}
         environment-name: prod
@@ -45,7 +44,7 @@ jobs:
         python -m coverage xml
 
     - name: Upload coverage
-      if: ${{ matrix.python-version == '3.13' }}
+      if: ${{ matrix.python-version == '3.14' }}
       uses: codecov/codecov-action@v5
       with:
         fail_ci_if_error: true
@@ -60,7 +59,7 @@ jobs:
 
     # This is somewhat suboptimal
     - name: Deploy docs
-      if: ${{ matrix.python-version == '3.13' && github.event_name == 'push' && github.ref == 'refs/heads/main'}}
+      if: ${{ matrix.python-version == '3.14' && github.event_name == 'push' && github.ref == 'refs/heads/main'}}
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         branch: gh-pages # The branch the action should deploy to.
