@@ -1,4 +1,5 @@
 dependencies:
+  - click>=8
   - coverage
   - pandas
   - geopandas
