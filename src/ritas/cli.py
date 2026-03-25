@@ -66,5 +66,8 @@ def main(**kwargs: dict) -> None:
 
     infile = kwargs.pop("infile")
     outfile = kwargs.pop("outfile")
+    # Coerce command-line inputs to Path to handle bytes/str/path-like values
+    infile = Path(infile)
+    outfile = Path(outfile)
     LOG.info("I am about to process %s -> %s", infile, outfile)
     simple_workflow(infile, outfile, **kwargs)
