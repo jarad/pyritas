@@ -5,6 +5,8 @@
 
 ### API Changes
 
+- Require python 3.11+.
+
 ### New Features
 
 ### Bug Fixes
